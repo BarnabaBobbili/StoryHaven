@@ -75,34 +75,61 @@ const useTTS = (settings) => {
 
 // Main App Component
 const App = () => {
-  const [stories, setStories] = useState([]);
+  const [stories, setStories] = useState(() => {
+    const saved = localStorage.getItem('stories');
+    return saved ? JSON.parse(saved) : [];
+  });
   const [currentStory, setCurrentStory] = useState(null);
   const [view, setView] = useState('home');
-  const [settings, setSettings] = useState({
-    theme: 'light',
-    fontSize: 'medium',
-    fontFamily: 'default',
-    highContrast: false,
-    ttsEnabled: true,
-    ttsRate: 0.9,
-    ttsPitch: 1,
-    ttsVolume: 1,
-    animations: true,
-    backgroundMusic: false,
-    musicType: 'none',
-    wizardMode: false,
-    safeMode: false,
-    parentalControls: false,
-    keyboardNavigation: true,
-    highlightWords: true,
-    viewMode: 'grid'
+  const [settings, setSettings] = useState(() => {
+    const saved = localStorage.getItem('settings');
+    return saved ? JSON.parse(saved) : {
+      theme: 'light',
+      fontSize: 'medium',
+      fontFamily: 'default',
+      highContrast: false,
+      ttsEnabled: true,
+      ttsRate: 0.9,
+      ttsPitch: 1,
+      ttsVolume: 1,
+      animations: true,
+      backgroundMusic: false,
+      musicType: 'none',
+      wizardMode: false,
+      safeMode: false,
+      parentalControls: false,
+      keyboardNavigation: true,
+      highlightWords: true,
+      viewMode: 'grid'
+    };
   });
   const [showRewards, setShowRewards] = useState(false);
   const [rewardType, setRewardType] = useState('badge');
-  const [showDailyChallenge, setShowDailyChallenge] = useState(true);
+  const [showDailyChallenge, setShowDailyChallenge] = useState(() => {
+    const lastShown = localStorage.getItem('lastDailyChallengeDate');
+    const today = new Date().toDateString();
+    return lastShown !== today;
+  });
 
+  // Save stories to localStorage whenever they change
+  useEffect(() => {
+    localStorage.setItem('stories', JSON.stringify(stories));
+  }, [stories]);
+
+  // Save settings to localStorage whenever they change
+  useEffect(() => {
+    localStorage.setItem('settings', JSON.stringify(settings));
+  }, [settings]);
+
+  // Save daily challenge state
+  useEffect(() => {
+    if (!showDailyChallenge) {
+      localStorage.setItem('lastDailyChallengeDate', new Date().toDateString());
+    }
+  }, [showDailyChallenge]);
   // Note: localStorage is not supported in Claude.ai artifacts
   // All data is stored in memory and will be lost on refresh
+  // added back the local storage
 
   const createNewStory = () => {
     const newStory = {
